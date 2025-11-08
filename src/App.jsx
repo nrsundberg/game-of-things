@@ -1,5 +1,5 @@
-import {useEffect, useState} from "react";
-import {Trash2} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Trash2 } from "lucide-react";
 
 const defaultNames = [
   "Zach",
