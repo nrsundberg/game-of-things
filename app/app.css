@@ -1,0 +1,654 @@
+@import "tailwindcss";
+
+/* =========================================================
+   TABLEDECK — GAME OF THINGS
+   Base CSS variables + component layer
+   Source of truth: tabledeck-design-language.md + 06-game-of-things-port.md
+   Visual components ported verbatim from src/index.css.
+   ========================================================= */
+
+@layer base {
+  :root {
+    /* Game of Things palette */
+    --kraft:        #e8dcc4;
+    --kraft-deep:   #d2c39e;
+    --ink:          #2a1f16;
+    --ink-soft:     #4a3728;
+    --ink-faint:    rgba(42, 31, 22, 0.72);
+    --cocktail:     #c8372a;
+    --mustard:      #d9a62a;
+    --teal:         #2f7a7a;
+    --gold:         #c9a24a;
+    --gold-hi:      #e8c872;
+    --gold-lo:      #8b6a1e;
+    --parchment:    #f4e9d0;
+    --parchment-edge: #c8b98f;
+    --parchment-deep: #e2d4b0;
+    --bone:         #f6efe0;
+    --bone-edge:    #d2c5a3;
+    --bone-deep:    #c0b087;
+    --silver:       #c6c3bc;
+    --copper:       #a3441e;
+    --walnut:       #3a2416;
+    --walnut-lo:    #2a1a10;
+    --walnut-hi:    #704b2b;
+    --walnut-mid:   #5b3a22;
+    --wine:         #4d1219;
+    --wine-mid:     #6b1a21;
+    --wine-deep:    #2c0a0d;
+    --forest:       #214634;
+
+    /* Typography */
+    --serif:  'Cormorant Garamond', Georgia, serif;
+    --sans:   'Inter', system-ui, sans-serif;
+    --mono:   'IBM Plex Mono', ui-monospace, monospace;
+    --script: 'Caveat', cursive;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    min-height: 100vh;
+    /* Kraft cardstock surface with paper texture */
+    background-color: #e8dcc4;
+    background-image:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 0.22  0 0 0 0 0.18  0 0 0 0 0.13  0 0 0 0.25 0'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='0.5'/></svg>"),
+      radial-gradient(ellipse at 50% 0%, rgba(217,166,42,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.08) 0%, transparent 70%);
+    background-size: 220px 220px, 100% 100%, 100% 100%;
+    background-blend-mode: multiply, normal, normal;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@layer components {
+
+  /* ======================================
+     PAPER TEXTURE UTILITY */
+  .t-paper {
+    background-image:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 0.22  0 0 0 0 0.18  0 0 0 0 0.13  0 0 0 0.25 0'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='0.5'/></svg>");
+    background-size: 220px 220px;
+    background-blend-mode: multiply;
+  }
+
+  .t-linen {
+    background-image:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='1'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.16  0 0 0 0 0.1  0 0 0 0.12 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+  }
+
+  /* ======================================
+     TICKET CHIP */
+  .td-ticket {
+    position: relative;
+    background: var(--mustard);
+    color: var(--ink);
+    padding: 9px 22px;
+    box-shadow:
+      inset 0 0 0 1px rgba(42,31,22,0.2),
+      0 1px 0 rgba(255,255,255,0.15),
+      0 4px 10px rgba(0,0,0,0.3);
+    clip-path: polygon(
+      0% 18%, 4% 0%,  96% 0%, 100% 18%,
+      100% 82%, 96% 100%, 4% 100%, 0% 82%
+    );
+    font-family: var(--mono);
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Bone variant for viewer ticket and action chips */
+  .td-ticket-bone {
+    position: relative;
+    background: var(--bone);
+    color: var(--ink);
+    padding: 9px 22px;
+    box-shadow:
+      inset 0 0 0 1px rgba(42,31,22,0.15),
+      0 1px 0 rgba(255,255,255,0.12),
+      0 4px 10px rgba(0,0,0,0.3);
+    clip-path: polygon(
+      0% 18%, 4% 0%,  96% 0%, 100% 18%,
+      100% 82%, 96% 100%, 4% 100%, 0% 82%
+    );
+    font-family: var(--mono);
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    user-select: none;
+    border: none;
+    outline: none;
+  }
+  .td-ticket-bone:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 0 0 1px rgba(42,31,22,0.15),
+      0 1px 0 rgba(255,255,255,0.12),
+      0 6px 14px rgba(0,0,0,0.38);
+  }
+  .td-ticket-bone:active {
+    transform: translateY(1px);
+  }
+
+  /* ======================================
+     SCROLL PANEL */
+  .td-scroll {
+    position: relative;
+    background: var(--parchment);
+    border-radius: 4px;
+    padding: 22px 20px 20px;
+    box-shadow:
+      inset 0 0 0 1px rgba(42,31,22,0.12),
+      inset 0 0 0 6px var(--parchment),
+      inset 0 0 0 7px rgba(42,31,22,0.08),
+      0 6px 18px rgba(0,0,0,0.3);
+    color: var(--ink);
+  }
+  .td-scroll::before,
+  .td-scroll::after {
+    content: "";
+    position: absolute;
+    left: -6px; right: -6px;
+    height: 14px;
+    background:
+      radial-gradient(circle at 6px 50%, var(--parchment) 5px, transparent 5.5px) 0 0/12px 14px repeat-x,
+      var(--parchment);
+    filter: drop-shadow(0 1px 0 rgba(0,0,0,0.2));
+  }
+  .td-scroll::before { top: -10px; }
+  .td-scroll::after  { bottom: -10px; transform: scaleY(-1); }
+
+  /* ======================================
+     DIE-CUT CARD */
+  .td-card {
+    position: relative;
+    background: var(--parchment);
+    border-radius: 9px;
+    box-shadow:
+      inset 0 0 0 1px rgba(42,31,22,0.45),
+      inset 0 0 0 2px var(--parchment),
+      inset 0 0 0 3px rgba(42,31,22,0.22),
+      0 2px 0 rgba(0,0,0,0.25),
+      0 10px 20px rgba(0,0,0,0.3);
+    overflow: hidden;
+  }
+  .td-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 0.25  0 0 0 0 0.2  0 0 0 0 0.13  0 0 0 0.18 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+    background-size: 200px 200px;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ======================================
+     PLAQUE (raised kraft plaque for masthead) */
+  .td-plaque {
+    background: linear-gradient(180deg, #ede1c6 0%, var(--kraft) 50%, var(--kraft-deep) 100%);
+    border-radius: 8px;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.6),
+      inset 0 -1px 0 rgba(0,0,0,0.15),
+      inset 0 0 0 1px rgba(42,31,22,0.2),
+      0 2px 0 rgba(0,0,0,0.35),
+      0 8px 18px rgba(0,0,0,0.3);
+  }
+
+  /* ======================================
+     PINNED NOTE (player card) */
+  .td-pinned {
+    position: relative;
+    background: #fdf8f0;
+    border-radius: 3px;
+    padding: 32px 14px 16px;
+    box-shadow:
+      0 2px 6px rgba(0,0,0,0.22),
+      0 8px 20px rgba(0,0,0,0.15),
+      inset 0 0 0 1px rgba(42,31,22,0.08);
+    transform: rotate(var(--pin-rot, -1.5deg));
+    transform-origin: top center;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    cursor: pointer;
+  }
+  .td-pinned::before {
+    /* paper texture overlay */
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.22  0 0 0 0 0.18  0 0 0 0 0.13  0 0 0 0.12 0'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='0.4'/></svg>");
+    background-size: 160px 160px;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    border-radius: 3px;
+  }
+  .td-pinned:hover {
+    transform: rotate(0deg) translateY(-4px);
+    box-shadow:
+      0 4px 12px rgba(0,0,0,0.28),
+      0 16px 32px rgba(0,0,0,0.18),
+      inset 0 0 0 1px rgba(42,31,22,0.08);
+  }
+  .td-pinned.is-out {
+    background: #f7f0e6;
+    opacity: 0.72;
+  }
+  /* Viewer: non-interactive */
+  .td-pinned.viewer-mode {
+    cursor: default;
+    pointer-events: none;
+  }
+  .td-pinned.viewer-mode:hover {
+    transform: rotate(var(--pin-rot, -1.5deg));
+    box-shadow:
+      0 2px 6px rgba(0,0,0,0.22),
+      0 8px 20px rgba(0,0,0,0.15),
+      inset 0 0 0 1px rgba(42,31,22,0.08);
+  }
+
+  /* ======================================
+     PRIMARY BUTTON (gold foil) */
+  .td-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: 1px solid var(--gold-lo);
+    border-radius: 999px;
+    background: linear-gradient(180deg, var(--gold-hi) 0%, var(--gold) 48%, #a77f28 100%);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-variant: small-caps;
+    font-weight: 700;
+    font-size: 14.5px;
+    letter-spacing: 0.18em;
+    cursor: pointer;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.55),
+      inset 0 -1px 0 rgba(0,0,0,0.3),
+      0 4px 10px rgba(0,0,0,0.35);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .td-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.55),
+      inset 0 -1px 0 rgba(0,0,0,0.3),
+      0 6px 14px rgba(0,0,0,0.4);
+  }
+  .td-btn-primary:active {
+    transform: translateY(1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.35),
+      inset 0 -1px 0 rgba(0,0,0,0.2),
+      0 2px 6px rgba(0,0,0,0.3);
+  }
+  .td-btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* ======================================
+     SECONDARY BUTTON (ivory) */
+  .td-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 20px;
+    border: 1px solid rgba(42,31,22,0.35);
+    border-radius: 999px;
+    background: linear-gradient(180deg, #fdf8f0 0%, #f0e8d4 100%);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-variant: small-caps;
+    font-weight: 700;
+    font-size: 14.5px;
+    letter-spacing: 0.16em;
+    cursor: pointer;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.8),
+      inset 0 -1px 0 rgba(0,0,0,0.12),
+      0 2px 6px rgba(0,0,0,0.22);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .td-btn-secondary:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.8),
+      inset 0 -1px 0 rgba(0,0,0,0.12),
+      0 4px 10px rgba(0,0,0,0.28);
+  }
+  .td-btn-secondary:active {
+    transform: translateY(1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.5),
+      inset 0 -1px 0 rgba(0,0,0,0.08),
+      0 1px 4px rgba(0,0,0,0.2);
+  }
+  .td-btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* ======================================
+     NOTEBOOK TEXTAREA */
+  .td-notebook {
+    width: 100%;
+    background: #fdf8f0;
+    border: none;
+    border-radius: 3px;
+    /* Top padding tuned so the text baselines land on the ruled lines.
+       For Inter 14px / line-height 24px, the baseline sits ~18.5px below
+       the top of the line-box; with padding-top 5px the first baseline is
+       at y ≈ 23.5, matching the first rule at y = 23. */
+    padding: 5px 16px 14px;
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--ink);
+    resize: none;
+    overflow: hidden;
+    min-height: 80px;
+    line-height: 24px;
+    background-image:
+      repeating-linear-gradient(
+        transparent,
+        transparent 23px,
+        rgba(42,31,22,0.12) 23px,
+        rgba(42,31,22,0.12) 24px
+      ),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.22  0 0 0 0 0.18  0 0 0 0 0.13  0 0 0 0.08 0'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='0.4'/></svg>");
+    background-size: 100% 24px, 200px 200px;
+    box-shadow:
+      inset 0 0 0 1px rgba(42,31,22,0.12),
+      0 1px 4px rgba(0,0,0,0.1);
+  }
+  .td-notebook:focus {
+    outline: none;
+    box-shadow:
+      inset 0 0 0 1px rgba(200,55,42,0.4),
+      0 0 0 2px rgba(200,55,42,0.12);
+  }
+  .td-notebook::placeholder {
+    font-family: var(--script);
+    font-size: 16px;
+    color: rgba(42,31,22,0.35);
+  }
+
+  /* Viewer read-only notebook (div, not textarea) */
+  .td-notebook-readonly {
+    width: 100%;
+    background: #fdf8f0;
+    border: none;
+    border-radius: 3px;
+    /* Match .td-notebook padding so baselines align with rules. */
+    padding: 5px 16px 14px;
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--ink);
+    min-height: 80px;
+    line-height: 24px;
+    background-image:
+      repeating-linear-gradient(
+        transparent,
+        transparent 23px,
+        rgba(42,31,22,0.12) 23px,
+        rgba(42,31,22,0.12) 24px
+      ),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.22  0 0 0 0 0.18  0 0 0 0 0.13  0 0 0 0.08 0'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='0.4'/></svg>");
+    background-size: 100% 24px, 200px 200px;
+    box-shadow:
+      inset 0 0 0 1px rgba(42,31,22,0.12),
+      0 1px 4px rgba(0,0,0,0.1);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* ======================================
+     SMALL-CAPS LABEL */
+  .sc {
+    font-family: var(--serif);
+    font-variant: small-caps;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    font-size: 13px;
+    color: var(--ink-faint);
+  }
+
+  /* ======================================
+     INPUT UNDERLINE STYLE */
+  .td-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid rgba(42,31,22,0.3);
+    border-radius: 0;
+    padding: 6px 4px;
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .td-input:focus {
+    border-bottom-color: var(--cocktail);
+  }
+  .td-input::placeholder {
+    font-family: var(--script);
+    font-size: 15px;
+    color: rgba(42,31,22,0.4);
+  }
+
+  /* ======================================
+     MODAL / CONFIRM OVERLAY */
+  .modal-scroll-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.60);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 16px;
+  }
+
+  .modal-scroll {
+    position: relative;
+    background: linear-gradient(180deg, var(--parchment) 0%, var(--parchment-deep) 100%);
+    border-radius: 6px;
+    padding: 28px 28px 24px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow:
+      inset 0 0 0 1px rgba(42,31,22,0.12),
+      inset 0 0 0 6px var(--parchment),
+      inset 0 0 0 7px rgba(42,31,22,0.08),
+      0 20px 50px rgba(0,0,0,0.7);
+    color: var(--ink);
+  }
+  /* Torn-edge top curl */
+  .modal-scroll::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    right: -6px;
+    top: -10px;
+    height: 14px;
+    background:
+      radial-gradient(circle at 6px 50%, var(--parchment) 5px, transparent 5.5px) 0 0 / 12px 14px repeat-x,
+      var(--parchment);
+    filter: drop-shadow(0 -1px 0 rgba(0,0,0,0.2));
+  }
+  /* Torn-edge bottom curl */
+  .modal-scroll::after {
+    content: "";
+    position: absolute;
+    left: -6px;
+    right: -6px;
+    bottom: -10px;
+    height: 14px;
+    background:
+      radial-gradient(circle at 6px 50%, var(--parchment-deep) 5px, transparent 5.5px) 0 0 / 12px 14px repeat-x,
+      var(--parchment-deep);
+    filter: drop-shadow(0 1px 0 rgba(0,0,0,0.25));
+    transform: scaleY(-1);
+  }
+
+  /* ======================================
+     TOAST STAMP ("COPIED" / "LINK COPIED") */
+  .td-toast-stamp {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    background: linear-gradient(180deg, var(--bone) 0%, var(--bone-deep) 100%);
+    border: 2px solid var(--gold);
+    border-radius: 4px;
+    padding: 8px 20px;
+    font-family: var(--serif);
+    font-variant: small-caps;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.16em;
+    color: var(--walnut);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.6),
+      0 4px 12px rgba(0,0,0,0.4);
+    z-index: 60;
+    pointer-events: none;
+    animation: toast-fade 2.2s ease forwards;
+  }
+
+  @keyframes toast-fade {
+    0%   { opacity: 0; transform: translateX(-50%) rotate(-2deg) translateY(8px); }
+    12%  { opacity: 1; transform: translateX(-50%) rotate(-2deg) translateY(0); }
+    75%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* ======================================
+     LOBBY CARD */
+  .lobby-card {
+    width: 100%;
+    max-width: 440px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #fdf8f0 0%, var(--parchment-deep) 100%);
+    box-shadow:
+      inset 0 0 0 1px rgba(42,31,22,0.18),
+      inset 0 0 0 5px #fdf8f0,
+      inset 0 0 0 6px rgba(42,31,22,0.10),
+      0 12px 36px rgba(0,0,0,0.35);
+    color: var(--ink);
+    position: relative;
+  }
+  /* Linen texture on lobby card */
+  .lobby-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    pointer-events: none;
+    background-image:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='1'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.16  0 0 0 0 0.1  0 0 0 0.12 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+    mix-blend-mode: multiply;
+    opacity: 0.7;
+  }
+
+} /* end @layer components */
+
+/* ======================================
+   MOBILE RESPONSIVENESS */
+
+/*
+ * Player board: reduce minimum card width slightly at 375px
+ * so four cards can still fit side-by-side without overflow.
+ */
+@media (max-width: 479px) {
+  .td-pinned {
+    /* Dampen rotation so rotated corners don't clip out of grid */
+    transform: rotate(calc(var(--pin-rot, -1.5deg) * 0.5)) !important;
+  }
+}
+
+/*
+ * Masthead: on very narrow screens the plaque + chip can wrap
+ * awkwardly.  Allow the plaque to shrink.
+ */
+@media (max-width: 479px) {
+  .td-plaque {
+    padding: 12px 16px !important;
+  }
+}
+
+/*
+ * Add-player form: make the input full-width below 400px.
+ */
+@media (max-width: 399px) {
+  .td-input {
+    width: 100% !important;
+  }
+}
+
+/*
+ * Ticket chip: tighten horizontal padding on phones.
+ */
+@media (max-width: 479px) {
+  .td-ticket,
+  .td-ticket-bone {
+    padding: 6px 14px;
+  }
+}
+
+/*
+ * Modal scroll: on mobile, bottom-sheet style.
+ */
+@media (max-width: 639px) {
+  .modal-scroll-overlay {
+    align-items: flex-end;
+    padding: 8px 10px;
+  }
+  .modal-scroll {
+    padding: 22px 18px 20px;
+    max-height: calc(100dvh - 48px);
+    overflow-y: auto;
+  }
+}
+
+/* ========== GLOBAL UTILS ========== */
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}

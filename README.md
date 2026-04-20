@@ -1,17 +1,23 @@
-### INSTALL
+# The Game of Things — Tabledeck Edition
+
+A real-time, host-controlled version of The Game of Things built on the Tabledeck stack: React Router 7 on Cloudflare Workers, Prisma D1 for game metadata, Durable Objects for live player state, and the `@tabledeck/game-room` shared library for WebSocket session management. Hosted at `things.tabledeck.us`.
+
+The host creates a game, shares a link, and controls the prompt, player list (add/remove/toggle IN↔OUT), and round notes. Viewers open the shareable link and see everything update in real time — no controls, no sign-in required. Host identity is a cookie (`got_<gameId>`) set at game creation.
+
+## Development
 
 ```bash
-  pnpm i
+npm install
+npm run dev          # vite dev server on port 3004
 ```
 
-### RUNNING
+## Deploy
+
 ```bash
-    pnpm dev
+# First deploy only: create the D1 database and paste the ID into wrangler.jsonc
+npx wrangler d1 create game-of-things
+
+npm run build
+npm run d1:migrate   # apply migrations to remote D1
+wrangler deploy
 ```
-
-***
-
-### Connections
-If your computer is on the local wifi you can connect with a phone via the url in the top right of the home page.
-
-Note: This is not a two way street... it is an http connection that gives people player cards with red and green for who is in and who is out. Also, they get a little text area to type notes...

@@ -1,0 +1,18 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/db"
+  runtime  = "cloudflare"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Game {
+  id        String   @id             // nanoid(6)
+  hostName  String   @default("")
+  topic     String   @default("")
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

@@ -1,8 +1,40 @@
 {
   "name": "game-of-things",
-  "compatibility_date": "2026-04-05",
+  "compatibility_date": "2026-03-30",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "./workers/app.ts",
   "assets": {
-    "directory": "./dist",
-    "not_found_handling": "single-page-application"
-  }
+    "directory": "./build/client"
+  },
+  "routes": [
+    {
+      "pattern": "things.tabledeck.us",
+      "custom_domain": true
+    }
+  ],
+  "vars": {
+    "ENVIRONMENT": "production"
+  },
+  "d1_databases": [
+    {
+      "binding": "D1_DATABASE",
+      "database_name": "game-of-things",
+      "database_id": "6aaa2b64-422a-409d-a536-dcdaf9b83094",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "GOT_ROOM",
+        "class_name": "GotRoomDO"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["GotRoomDO"]
+    }
+  ]
 }
