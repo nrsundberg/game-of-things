@@ -8,6 +8,8 @@ import {
   togglePlayer,
   setNotes,
   resetRound,
+  incrementScore,
+  resetScores,
 } from "../app/domain/logic";
 
 export class GotRoomDO extends BaseGameRoomDO<GotState, GotSettings, Env> {
@@ -37,7 +39,12 @@ export class GotRoomDO extends BaseGameRoomDO<GotState, GotSettings, Env> {
     const raw = data as GotState;
     return {
       topic: raw.topic ?? "",
-      players: raw.players ?? [],
+      // Backfill score on any legacy players persisted before scoring existed.
+      players: (raw.players ?? []).map((p) => ({
+        name: p.name,
+        isOut: p.isOut ?? false,
+        score: typeof p.score === "number" ? p.score : 0,
+      })),
       notes: raw.notes ?? "",
       host: raw.host ?? { seat: 0, name: "Host", connected: false },
     };
@@ -117,6 +124,14 @@ export class GotRoomDO extends BaseGameRoomDO<GotState, GotSettings, Env> {
       }
       case "reset_round": {
         this.gameState = resetRound(this.gameState);
+        break;
+      }
+      case "increment_score": {
+        this.gameState = incrementScore(this.gameState, msg.name, msg.delta);
+        break;
+      }
+      case "reset_scores": {
+        this.gameState = resetScores(this.gameState);
         break;
       }
     }

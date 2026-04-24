@@ -39,7 +39,7 @@ const entryServer = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineP
   __proto__: null,
   default: handleRequest
 }, Symbol.toStringTag, { value: "Module" }));
-const styles = "/assets/app-B5Yq0NgQ.css";
+const styles = "/assets/app-IAeQaA-k.css";
 const meta$2 = () => [{
   title: "The Game of Things — Tabledeck Edition"
 }, {
@@ -919,6 +919,17 @@ const game_$gameId = UNSAFE_withComponentProps(function GameRoom({
       onRemove: (name) => send({
         type: "remove_player",
         name
+      }),
+      onScore: (name, delta) => send({
+        type: "increment_score",
+        name,
+        delta
+      })
+    }), /* @__PURE__ */ jsx(Scoreboard, {
+      players,
+      isHost,
+      onResetScores: () => send({
+        type: "reset_scores"
       })
     }), /* @__PURE__ */ jsx(NotesSection, {
       notes,
@@ -1103,7 +1114,7 @@ function PromptCard({
             size: 14
           })
         })]
-      }), /* @__PURE__ */ jsx("p", {
+      }), !topic.trim() && !draft.trim() && /* @__PURE__ */ jsx("p", {
         style: {
           fontFamily: "var(--script)",
           fontSize: "17px",
@@ -1133,7 +1144,8 @@ function PlayerBoard({
   players,
   isHost,
   onToggle,
-  onRemove
+  onRemove,
+  onScore
 }) {
   if (!players || players.length === 0) {
     return /* @__PURE__ */ jsx("div", {
@@ -1156,7 +1168,7 @@ function PlayerBoard({
   return /* @__PURE__ */ jsx("div", {
     style: {
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
+      gridTemplateColumns: "repeat(auto-fill, minmax(116px, 1fr))",
       gap: 24,
       justifyItems: "center",
       maxWidth: 860,
@@ -1166,20 +1178,24 @@ function PlayerBoard({
     children: players.map((player, i) => /* @__PURE__ */ jsx(PlayerCard, {
       name: player.name,
       isOut: player.isOut,
+      score: player.score ?? 0,
       rotIndex: i,
       isHost,
       onToggle: () => onToggle(player.name),
-      onRemove: () => onRemove(player.name)
+      onRemove: () => onRemove(player.name),
+      onScore: () => onScore(player.name, 1)
     }, player.name))
   });
 }
 function PlayerCard({
   name,
   isOut,
+  score,
   rotIndex,
   isHost,
   onToggle,
-  onRemove
+  onRemove,
+  onScore
 }) {
   const rot = PIN_ROTATIONS[rotIndex % PIN_ROTATIONS.length];
   const cardProps = isHost ? {
@@ -1249,7 +1265,7 @@ function PlayerCard({
       style: {
         fontFamily: "var(--serif)",
         fontWeight: 600,
-        fontSize: "17px",
+        fontSize: "19px",
         textAlign: "center",
         lineHeight: 1.2,
         color: "var(--ink)",
@@ -1270,6 +1286,60 @@ function PlayerCard({
         height: 3,
         color: "rgba(200,55,42,0.65)"
       })
+    }), /* @__PURE__ */ jsxs("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        marginTop: 10,
+        position: "relative",
+        zIndex: 1
+      },
+      children: [/* @__PURE__ */ jsxs("span", {
+        "aria-label": `${name} has ${score} point${score === 1 ? "" : "s"}`,
+        style: {
+          fontFamily: "var(--serif)",
+          fontVariant: "small-caps",
+          letterSpacing: "0.12em",
+          fontSize: 11,
+          color: "rgba(42,31,22,0.6)"
+        },
+        children: [score, " pt", score === 1 ? "" : "s"]
+      }), isHost && /* @__PURE__ */ jsx("button", {
+        type: "button",
+        "aria-label": `Award a point to ${name}`,
+        title: "Guessed correctly — +1 point",
+        onClick: (e) => {
+          e.stopPropagation();
+          onScore();
+        },
+        style: {
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minWidth: 26,
+          height: 22,
+          padding: "0 7px",
+          borderRadius: 11,
+          border: "1px solid rgba(42,31,22,0.25)",
+          background: "#fdf8f0",
+          cursor: "pointer",
+          fontFamily: "var(--serif)",
+          fontWeight: 700,
+          fontSize: 12,
+          lineHeight: 1,
+          color: "var(--ink)",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.08)"
+        },
+        onMouseEnter: (e) => {
+          e.currentTarget.style.background = "#f3e6c8";
+        },
+        onMouseLeave: (e) => {
+          e.currentTarget.style.background = "#fdf8f0";
+        },
+        children: "+1"
+      })]
     }), isHost && /* @__PURE__ */ jsx("button", {
       className: "absolute bottom-2 right-2 transition-opacity",
       style: {
@@ -1296,6 +1366,133 @@ function PlayerCard({
         size: 13
       })
     })]
+  });
+}
+function Scoreboard({
+  players,
+  isHost,
+  onResetScores
+}) {
+  const [open, setOpen] = useState(true);
+  if (!players || players.length === 0) return null;
+  const ranked = [...players].sort((a, b) => {
+    const s = (b.score ?? 0) - (a.score ?? 0);
+    return s !== 0 ? s : a.name.localeCompare(b.name);
+  });
+  return /* @__PURE__ */ jsx("section", {
+    style: {
+      width: "100%",
+      maxWidth: 640,
+      margin: "32px auto 0"
+    },
+    children: /* @__PURE__ */ jsxs("div", {
+      className: "td-card",
+      style: {
+        background: "#fdf8f0",
+        padding: "14px 20px",
+        borderRadius: 9
+      },
+      children: [/* @__PURE__ */ jsxs("div", {
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          position: "relative",
+          zIndex: 1
+        },
+        children: [/* @__PURE__ */ jsxs("button", {
+          type: "button",
+          onClick: () => setOpen((o) => !o),
+          "aria-expanded": open,
+          "aria-controls": "got-scoreboard-body",
+          style: {
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            padding: 0,
+            fontFamily: "var(--serif)",
+            fontVariant: "small-caps",
+            fontWeight: 600,
+            fontSize: 14,
+            letterSpacing: "0.14em",
+            color: "var(--ink)"
+          },
+          children: [/* @__PURE__ */ jsx("span", {
+            "aria-hidden": "true",
+            style: {
+              fontSize: 10,
+              opacity: 0.5
+            },
+            children: open ? "▾" : "▸"
+          }), "Scoreboard"]
+        }), /* @__PURE__ */ jsx("div", {
+          "aria-hidden": "true",
+          style: {
+            flex: 1,
+            height: 1,
+            background: "repeating-linear-gradient(90deg, rgba(42,31,22,0.3) 0 4px, transparent 4px 8px)"
+          }
+        }), isHost && open && /* @__PURE__ */ jsx("button", {
+          type: "button",
+          onClick: onResetScores,
+          style: {
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            fontFamily: "var(--serif)",
+            fontVariant: "small-caps",
+            letterSpacing: "0.18em",
+            fontSize: 11,
+            color: "rgba(42,31,22,0.55)",
+            padding: "2px 4px"
+          },
+          title: "Reset all scores to zero",
+          children: "Reset"
+        })]
+      }), open && /* @__PURE__ */ jsx("ul", {
+        id: "got-scoreboard-body",
+        style: {
+          listStyle: "none",
+          margin: "10px 0 0",
+          padding: 0,
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+          gap: "6px 18px",
+          position: "relative",
+          zIndex: 1
+        },
+        children: ranked.map((p) => /* @__PURE__ */ jsxs("li", {
+          style: {
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            gap: 8,
+            fontFamily: "var(--serif)",
+            fontSize: 15,
+            color: "var(--ink)",
+            borderBottom: "1px dotted rgba(42,31,22,0.2)",
+            padding: "2px 0"
+          },
+          children: [/* @__PURE__ */ jsx("span", {
+            style: {
+              overflow: "hidden",
+              textOverflow: "ellipsis"
+            },
+            children: p.name
+          }), /* @__PURE__ */ jsx("span", {
+            style: {
+              fontWeight: 700,
+              fontVariant: "tabular-nums",
+              color: "var(--ink)"
+            },
+            children: p.score ?? 0
+          })]
+        }, p.name))
+      })]
+    })
   });
 }
 function AddPlayerForm({
@@ -1613,7 +1810,7 @@ const route3 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProper
   __proto__: null,
   action
 }, Symbol.toStringTag, { value: "Module" }));
-const serverManifest = { "entry": { "module": "/assets/entry.client-BRexs9Iv.js", "imports": ["/assets/chunk-OE4NN4TA-DLHXbJDI.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasDefaultExport": true, "hasErrorBoundary": true, "module": "/assets/root-lC21GFIi.js", "imports": ["/assets/chunk-OE4NN4TA-DLHXbJDI.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasDefaultExport": true, "hasErrorBoundary": false, "module": "/assets/_index-CGHxBkXt.js", "imports": ["/assets/chunk-OE4NN4TA-DLHXbJDI.js", "/assets/BtnPrimary-Bf5_CY6N.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/game.$gameId": { "id": "routes/game.$gameId", "parentId": "root", "path": "game/:gameId", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasDefaultExport": true, "hasErrorBoundary": false, "module": "/assets/game._gameId-hVfqWD8U.js", "imports": ["/assets/chunk-OE4NN4TA-DLHXbJDI.js", "/assets/BtnPrimary-Bf5_CY6N.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/api/game": { "id": "routes/api/game", "parentId": "root", "path": "api/game", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasDefaultExport": false, "hasErrorBoundary": false, "module": "/assets/game-l0sNRNKZ.js", "imports": [], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 } }, "url": "/assets/manifest-63a0a6e3.js", "version": "63a0a6e3", "sri": void 0 };
+const serverManifest = { "entry": { "module": "/assets/entry.client-BRexs9Iv.js", "imports": ["/assets/chunk-OE4NN4TA-DLHXbJDI.js"], "css": [] }, "routes": { "root": { "id": "root", "parentId": void 0, "path": "", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasDefaultExport": true, "hasErrorBoundary": true, "module": "/assets/root-89PfXlD2.js", "imports": ["/assets/chunk-OE4NN4TA-DLHXbJDI.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/_index": { "id": "routes/_index", "parentId": "root", "path": void 0, "index": true, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasDefaultExport": true, "hasErrorBoundary": false, "module": "/assets/_index-CGHxBkXt.js", "imports": ["/assets/chunk-OE4NN4TA-DLHXbJDI.js", "/assets/BtnPrimary-Bf5_CY6N.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/game.$gameId": { "id": "routes/game.$gameId", "parentId": "root", "path": "game/:gameId", "index": void 0, "caseSensitive": void 0, "hasAction": false, "hasLoader": true, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasDefaultExport": true, "hasErrorBoundary": false, "module": "/assets/game._gameId-EBRkhHJ4.js", "imports": ["/assets/chunk-OE4NN4TA-DLHXbJDI.js", "/assets/BtnPrimary-Bf5_CY6N.js"], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 }, "routes/api/game": { "id": "routes/api/game", "parentId": "root", "path": "api/game", "index": void 0, "caseSensitive": void 0, "hasAction": true, "hasLoader": false, "hasClientAction": false, "hasClientLoader": false, "hasClientMiddleware": false, "hasDefaultExport": false, "hasErrorBoundary": false, "module": "/assets/game-l0sNRNKZ.js", "imports": [], "css": [], "clientActionModule": void 0, "clientLoaderModule": void 0, "clientMiddlewareModule": void 0, "hydrateFallbackModule": void 0 } }, "url": "/assets/manifest-708ed15d.js", "version": "708ed15d", "sri": void 0 };
 const assetsBuildDirectory = "build/client";
 const basename = "/";
 const future = { "unstable_optimizeDeps": false, "unstable_passThroughRequests": false, "unstable_subResourceIntegrity": false, "unstable_trailingSlashAwareDataRequests": false, "unstable_previewServerPrerendering": false, "v8_middleware": false, "v8_splitRouteModules": false, "v8_viteEnvironmentApi": false };

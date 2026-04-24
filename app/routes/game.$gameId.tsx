@@ -229,6 +229,14 @@ export default function GameRoom({ loaderData }: Route.ComponentProps) {
         isHost={isHost}
         onToggle={(name) => send({ type: "toggle_player", name })}
         onRemove={(name) => send({ type: "remove_player", name })}
+        onScore={(name, delta) => send({ type: "increment_score", name, delta })}
+      />
+
+      {/* ── Scoreboard (compact, live) ────────────────────────────────────── */}
+      <Scoreboard
+        players={players}
+        isHost={isHost}
+        onResetScores={() => send({ type: "reset_scores" })}
       />
 
       {/* ── Notes ─────────────────────────────────────────────────────────── */}
@@ -430,20 +438,24 @@ function PromptCard({
           </div>
         )}
 
-        {/* Caveat flavor annotation */}
-        <p
-          style={{
-            fontFamily: "var(--script)",
-            fontSize: "17px",
-            color: "rgba(42,31,22,0.5)",
-            marginTop: 12,
-            marginBottom: 0,
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          e.g. — what you would regret the moment it leaves your mouth
-        </p>
+        {/* Caveat flavor annotation — only shown while no real prompt is set,
+            so the example disappears as soon as the host types something
+            (either committed or still being drafted). */}
+        {!topic.trim() && !draft.trim() && (
+          <p
+            style={{
+              fontFamily: "var(--script)",
+              fontSize: "17px",
+              color: "rgba(42,31,22,0.5)",
+              marginTop: 12,
+              marginBottom: 0,
+              position: "relative",
+              zIndex: 1,
+            }}
+          >
+            e.g. — what you would regret the moment it leaves your mouth
+          </p>
+        )}
 
         {/* Ruled-line decorative bottom strip */}
         <div
@@ -470,11 +482,13 @@ function PlayerBoard({
   isHost,
   onToggle,
   onRemove,
+  onScore,
 }: {
-  players: { name: string; isOut: boolean }[];
+  players: { name: string; isOut: boolean; score: number }[];
   isHost: boolean;
   onToggle: (name: string) => void;
   onRemove: (name: string) => void;
+  onScore: (name: string, delta: number) => void;
 }) {
   if (!players || players.length === 0) {
     return (
@@ -499,7 +513,7 @@ function PlayerBoard({
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
+        gridTemplateColumns: "repeat(auto-fill, minmax(116px, 1fr))",
         gap: 24,
         justifyItems: "center",
         maxWidth: 860,
@@ -512,10 +526,12 @@ function PlayerBoard({
           key={player.name}
           name={player.name}
           isOut={player.isOut}
+          score={player.score ?? 0}
           rotIndex={i}
           isHost={isHost}
           onToggle={() => onToggle(player.name)}
           onRemove={() => onRemove(player.name)}
+          onScore={() => onScore(player.name, 1)}
         />
       ))}
     </div>
@@ -527,17 +543,21 @@ function PlayerBoard({
 function PlayerCard({
   name,
   isOut,
+  score,
   rotIndex,
   isHost,
   onToggle,
   onRemove,
+  onScore,
 }: {
   name: string;
   isOut: boolean;
+  score: number;
   rotIndex: number;
   isHost: boolean;
   onToggle: () => void;
   onRemove: () => void;
+  onScore: () => void;
 }) {
   const rot = PIN_ROTATIONS[rotIndex % PIN_ROTATIONS.length];
 
@@ -617,7 +637,7 @@ function PlayerCard({
         style={{
           fontFamily: "var(--serif)",
           fontWeight: 600,
-          fontSize: "17px",
+          fontSize: "19px",
           textAlign: "center",
           lineHeight: 1.2,
           color: "var(--ink)",
@@ -636,6 +656,70 @@ function PlayerCard({
           <Strike width={name.length * 8 + 16} height={3} color="rgba(200,55,42,0.65)" />
         </div>
       )}
+
+      {/* Score row — score chip on the left, +1 button on the right (host only).
+          Shown on every card so viewers can see scores too. */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          marginTop: 10,
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        <span
+          aria-label={`${name} has ${score} point${score === 1 ? "" : "s"}`}
+          style={{
+            fontFamily: "var(--serif)",
+            fontVariant: "small-caps",
+            letterSpacing: "0.12em",
+            fontSize: 11,
+            color: "rgba(42,31,22,0.6)",
+          }}
+        >
+          {score} pt{score === 1 ? "" : "s"}
+        </span>
+        {isHost && (
+          <button
+            type="button"
+            aria-label={`Award a point to ${name}`}
+            title="Guessed correctly — +1 point"
+            onClick={(e) => {
+              e.stopPropagation();
+              onScore();
+            }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: 26,
+              height: 22,
+              padding: "0 7px",
+              borderRadius: 11,
+              border: "1px solid rgba(42,31,22,0.25)",
+              background: "#fdf8f0",
+              cursor: "pointer",
+              fontFamily: "var(--serif)",
+              fontWeight: 700,
+              fontSize: 12,
+              lineHeight: 1,
+              color: "var(--ink)",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#f3e6c8";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "#fdf8f0";
+            }}
+          >
+            +1
+          </button>
+        )}
+      </div>
 
       {/* Remove button — host only */}
       {isHost && (
@@ -666,6 +750,160 @@ function PlayerCard({
         </button>
       )}
     </div>
+  );
+}
+
+// ── Scoreboard ────────────────────────────────────────────────────────────────
+
+function Scoreboard({
+  players,
+  isHost,
+  onResetScores,
+}: {
+  players: { name: string; score: number }[];
+  isHost: boolean;
+  onResetScores: () => void;
+}) {
+  const [open, setOpen] = useState(true);
+  if (!players || players.length === 0) return null;
+
+  // Sort by score desc, then name for stability.
+  const ranked = [...players].sort((a, b) => {
+    const s = (b.score ?? 0) - (a.score ?? 0);
+    return s !== 0 ? s : a.name.localeCompare(b.name);
+  });
+
+  return (
+    <section
+      style={{
+        width: "100%",
+        maxWidth: 640,
+        margin: "32px auto 0",
+      }}
+    >
+      <div
+        className="td-card"
+        style={{
+          background: "#fdf8f0",
+          padding: "14px 20px",
+          borderRadius: 9,
+        }}
+      >
+        {/* Header row */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            aria-controls="got-scoreboard-body"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              fontFamily: "var(--serif)",
+              fontVariant: "small-caps",
+              fontWeight: 600,
+              fontSize: 14,
+              letterSpacing: "0.14em",
+              color: "var(--ink)",
+            }}
+          >
+            <span aria-hidden="true" style={{ fontSize: 10, opacity: 0.5 }}>
+              {open ? "▾" : "▸"}
+            </span>
+            Scoreboard
+          </button>
+          <div
+            aria-hidden="true"
+            style={{
+              flex: 1,
+              height: 1,
+              background:
+                "repeating-linear-gradient(90deg, rgba(42,31,22,0.3) 0 4px, transparent 4px 8px)",
+            }}
+          />
+          {isHost && open && (
+            <button
+              type="button"
+              onClick={onResetScores}
+              style={{
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                fontFamily: "var(--serif)",
+                fontVariant: "small-caps",
+                letterSpacing: "0.18em",
+                fontSize: 11,
+                color: "rgba(42,31,22,0.55)",
+                padding: "2px 4px",
+              }}
+              title="Reset all scores to zero"
+            >
+              Reset
+            </button>
+          )}
+        </div>
+
+        {/* Body */}
+        {open && (
+          <ul
+            id="got-scoreboard-body"
+            style={{
+              listStyle: "none",
+              margin: "10px 0 0",
+              padding: 0,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+              gap: "6px 18px",
+              position: "relative",
+              zIndex: 1,
+            }}
+          >
+            {ranked.map((p) => (
+              <li
+                key={p.name}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  gap: 8,
+                  fontFamily: "var(--serif)",
+                  fontSize: 15,
+                  color: "var(--ink)",
+                  borderBottom: "1px dotted rgba(42,31,22,0.2)",
+                  padding: "2px 0",
+                }}
+              >
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {p.name}
+                </span>
+                <span
+                  style={{
+                    fontWeight: 700,
+                    fontVariant: "tabular-nums",
+                    color: "var(--ink)",
+                  }}
+                >
+                  {p.score ?? 0}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
   );
 }
 

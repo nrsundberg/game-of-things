@@ -9,6 +9,7 @@ export interface GotSettings extends BaseSettings {
 export interface GotPlayer {
   name: string;
   isOut: boolean;
+  score: number;
 }
 
 export interface GotHostSeat {

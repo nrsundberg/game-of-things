@@ -30,6 +30,17 @@ export const ResetRoundMsg = z.object({
   type: z.literal("reset_round"),
 });
 
+export const IncrementScoreMsg = z.object({
+  // Add +delta (can be negative) to a player's running score.
+  type: z.literal("increment_score"),
+  name: z.string().min(1).max(24),
+  delta: z.number().int().min(-10).max(10).default(1),
+});
+
+export const ResetScoresMsg = z.object({
+  type: z.literal("reset_scores"),
+});
+
 export const ClientMessage = z.discriminatedUnion("type", [
   SetTopicMsg,
   AddPlayerMsg,
@@ -37,6 +48,8 @@ export const ClientMessage = z.discriminatedUnion("type", [
   TogglePlayerMsg,
   SetNotesMsg,
   ResetRoundMsg,
+  IncrementScoreMsg,
+  ResetScoresMsg,
 ]);
 
 export type ClientMessage = z.infer<typeof ClientMessage>;
